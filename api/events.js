@@ -68,12 +68,12 @@ module.exports = async (req, res) => {
   console.log(`Cache miss for ${era}, calling Anthropic...`);
   try {
     const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-haiku-3-20240307',
       max_tokens: 3000,
       messages: [{
         role: 'user',
         content: `Return ONLY a valid JSON array, no markdown, no backticks, no explanation.
-Generate 14 historical events from ${era}.
+Generate 8 historical events from ${era}.
 Each object must have these exact fields:
 "title" (max 8 words, no apostrophes),
 "desc" (2 sentences, no apostrophes or special characters),
