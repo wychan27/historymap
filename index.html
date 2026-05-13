@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History Map — World Events Through Time</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --surface: #faf7f2;
+      --surface2: #ede8de;
+      --border: rgba(0,0,0,0.1);
+      --border-strong: rgba(0,0,0,0.2);
+      --text: #1a1208;
+      --text-2: #5a4e38;
+      --text-3: #8a7d68;
+      --accent: #8b3a2a;
+      --accent-light: #f5e8e4;
+
+      --cat-political: #1a5fa0;
+      --cat-political-bg: #e3eef8;
+      --cat-religion: #6b3fa0;
+      --cat-religion-bg: #f0eaf8;
+      --cat-military: #a02020;
+      --cat-military-bg: #f8e3e3;
+      --cat-culture: #1a7a52;
+      --cat-culture-bg: #e3f5ee;
+      --cat-science: #8a6000;
+      --cat-science-bg: #f8f0d8;
+      --cat-exploration: #a04060;
+      --cat-exploration-bg: #f8e3ec;
+      --cat-other: #5a5a5a;
+      --cat-other-bg: #eeeeee;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .year-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .year-control label {
+      font-size: 13px;
+      color: var(--text-2);
+      white-space: nowrap;
+    }
+
+    #yearInput {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 500;
+      width: 110px;
+      border: none;
+      border-bottom: 2px solid var(--accent);
+      background: transparent;
+      color: var(--text);
+      padding: 2px 4px;
+      text-align: center;
+      outline: none;
+    }
+
+    #yearInput:focus { border-bottom-color: var(--cat-political); }
+
+    .era-badge {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .load-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 18px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .load-btn:hover { opacity: 0.85; }
+    .load-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .presets {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .preset {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .preset:hover { background: var(--surface2); color: var(--text); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      height: calc(100vh - 60px);
+    }
+
+    .map-panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .map-toolbar {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .filter-pill.off { opacity: 0.3; }
+
+    .filter-pill[data-cat="political"] { color: var(--cat-political); border-color: var(--cat-political); background: var(--cat-political-bg); }
+    .filter-pill[data-cat="religion"]  { color: var(--cat-religion);  border-color: var(--cat-religion);  background: var(--cat-religion-bg); }
+    .filter-pill[data-cat="military"]  { color: var(--cat-military);  border-color: var(--cat-military);  background: var(--cat-military-bg); }
+    .filter-pill[data-cat="culture"]   { color: var(--cat-culture);   border-color: var(--cat-culture);   background: var(--cat-culture-bg); }
+    .filter-pill[data-cat="science"]   { color: var(--cat-science);   border-color: var(--cat-science);   background: var(--cat-science-bg); }
+    .filter-pill[data-cat="exploration"]{ color: var(--cat-exploration); border-color: var(--cat-exploration); background: var(--cat-exploration-bg); }
+    .filter-pill[data-cat="other"]     { color: var(--cat-other);     border-color: var(--cat-other);     background: var(--cat-other-bg); }
+
+    #mapContainer { flex: 1; position: relative; overflow: hidden; }
+
+    #mapSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .map-tooltip {
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      pointer-events: none;
+      max-width: 240px;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      z-index: 50;
+    }
+
+    .map-tooltip .tt-title {
+      font-weight: 500;
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .map-tooltip .tt-region { font-size: 11px; color: var(--text-3); margin-bottom: 6px; }
+    .map-tooltip .tt-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .side-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .side-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .stat {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .stat-n { font-size: 18px; font-weight: 500; color: var(--text); font-family: 'Playfair Display', serif; }
+    .stat-l { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    .event-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .event-list::-webkit-scrollbar { width: 4px; }
+    .event-list::-webkit-scrollbar-track { background: transparent; }
+    .event-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+    .ev-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .ev-card:hover { border-color: var(--border-strong); }
+    .ev-card.highlighted { border-color: var(--accent); border-width: 2px; }
+
+    .ev-head { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
+
+    .cat-badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .ev-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .ev-meta { font-size: 11px; color: var(--text-3); margin-bottom: 6px; }
+
+    .ev-desc {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .ev-desc.open { display: block; }
+
+    .ev-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .ev-tags.open { display: flex; }
+
+    .ev-tag {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: var(--surface2);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+
+    .ev-actions { margin-top: 8px; display: none; gap: 6px; }
+    .ev-actions.open { display: flex; }
+
+    .ev-link {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-2);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .ev-link:hover { background: var(--surface2); color: var(--text); }
+
+    .empty-state {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-3);
+    }
+
+    .empty-state p { font-size: 14px; line-height: 1.7; }
+
+    .loading-state {
+      padding: 3rem 1rem;
+      text-align: center;
+      color: var(--text-3);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-state {
+      padding: 2rem 1rem;
+      text-align: center;
+      color: var(--cat-military);
+      font-size: 13px;
+    }
+
+    .side-footer {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-3);
+    }
+
+    .side-footer a { color: var(--text-2); }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
+      .presets { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⧖ History Map</div>
+  <div class="year-control">
+    <label>Year:</label>
+    <input type="number" id="yearInput" value="1000" min="-3000" max="2000">
+    <span class="era-badge" id="eraBadge">CE</span>
+    <button class="load-btn" id="loadBtn" onclick="loadYear()">Load</button>
+  </div>
+  <div class="presets">
+    <button class="preset" onclick="setYear(-44)">44 BCE</button>
+    <button class="preset" onclick="setYear(500)">500</button>
+    <button class="preset" onclick="setYear(1000)">1000</button>
+    <button class="preset" onclick="setYear(1066)">1066</button>
+    <button class="preset" onclick="setYear(1200)">1200</button>
+    <button class="preset" onclick="setYear(1347)">1347</button>
+    <button class="preset" onclick="setYear(1492)">1492</button>
+    <button class="preset" onclick="setYear(1776)">1776</button>
+    <button class="preset" onclick="setYear(1900)">1900</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="map-panel">
+    <div class="map-toolbar" id="filterBar">
+      <span style="font-size:12px;color:var(--text-3);margin-right:2px">Filter:</span>
+      <button class="filter-pill" data-cat="political" onclick="toggleFilter(this)">Political</button>
+      <button class="filter-pill" data-cat="religion"  onclick="toggleFilter(this)">Religion</button>
+      <button class="filter-pill" data-cat="military"  onclick="toggleFilter(this)">Military</button>
+      <button class="filter-pill" data-cat="culture"   onclick="toggleFilter(this)">Culture</button>
+      <button class="filter-pill" data-cat="science"   onclick="toggleFilter(this)">Science</button>
+      <button class="filter-pill" data-cat="exploration" onclick="toggleFilter(this)">Exploration</button>
+      <button class="filter-pill" data-cat="other"     onclick="toggleFilter(this)">Other</button>
+    </div>
+    <div id="mapContainer">
+      <svg id="mapSvg"></svg>
+      <div class="map-tooltip" id="mapTooltip"></div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="side-header">
+      <div class="side-title" id="sideTitle">World History Explorer</div>
+      <div class="stats-row" id="statsRow" style="display:none">
+        <div class="stat"><div class="stat-n" id="statTotal">0</div><div class="stat-l">Events</div></div>
+        <div class="stat"><div class="stat-n" id="statRegions">0</div><div class="stat-l">Regions</div></div>
+        <div class="stat"><div class="stat-n" id="statTop">—</div><div class="stat-l">Top type</div></div>
+      </div>
+    </div>
+
+    <div class="event-list" id="eventList">
+      <div class="empty-state">
+        <p>Enter a year and click <strong>Load</strong> to explore what was happening around the world.</p>
+        <br>
+        <p style="font-size:12px">Try 1000 CE, 1066 CE,<br>44 BCE, or any year in history.</p>
+      </div>
+    </div>
+
+    <div class="side-footer">
+      Events synthesized via Claude AI from historical sources &amp; <a href="https://www.wikidata.org" target="_blank">Wikidata</a>.
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = '';
+const API_SECRET = 'bumblebee2024xyz';
+
+const catColors = {
+  political:'#1a5fa0', religion:'#6b3fa0', military:'#a02020',
+  culture:'#1a7a52', science:'#8a6000', exploration:'#a04060', other:'#5a5a5a'
+};
+
+const catBg = {
+  political:'#e3eef8', religion:'#f0eaf8', military:'#f8e3e3',
+  culture:'#e3f5ee', science:'#f8f0d8', exploration:'#f8e3ec', other:'#eeeeee'
+};
+
+let allEvents = [];
+let activeFilters = new Set(['political','religion','military','culture','science','exploration','other']);
+let worldData = null;
+let currentYear = 1000;
+let highlightedId = null;
+
+function setYear(y) {
+  document.getElementById('yearInput').value = y;
+  loadYear();
+}
+
+function updateEraBadge(y) {
+  document.getElementById('eraBadge').textContent = y < 0 ? 'BCE' : 'CE';
+}
+
+async function loadYear() {
+  const y = parseInt(document.getElementById('yearInput').value) || 1000;
+  currentYear = y;
+  updateEraBadge(y);
+
+  const era = y < 0 ? `${Math.abs(y)} BCE` : `${y} CE`;
+  document.getElementById('sideTitle').textContent = `Events of ${era}`;
+
+  const btn = document.getElementById('loadBtn');
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+
+  document.getElementById('eventList').innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p style="font-size:13px">Fetching events from ${era}...</p>
+    </div>`;
+  document.getElementById('statsRow').style.display = 'none';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/events/${y}`, { headers: { 'x-api-secret': API_SECRET } });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+    allEvents = data.events;
+    renderAll();
+  } catch (err) {
+    document.getElementById('eventList').innerHTML = `
+      <div class="error-state">
+        <p>⚠ Could not load events.</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-3)">${err.message}</p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-3)">Make sure the backend server is running on port 3001.</p>
+      </div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Load';
+}
+
+function toggleFilter(btn) {
+  const cat = btn.dataset.cat;
+  if (activeFilters.has(cat)) { activeFilters.delete(cat); btn.classList.add('off'); }
+  else { activeFilters.add(cat); btn.classList.remove('off'); }
+  renderAll();
+}
+
+function renderAll() {
+  const visible = allEvents.filter(e => activeFilters.has(e.cat));
+
+  const regions = new Set(visible.map(e => e.region)).size;
+  const catCounts = {};
+  visible.forEach(e => { catCounts[e.cat] = (catCounts[e.cat] || 0) + 1; });
+  const top = Object.entries(catCounts).sort((a,b) => b[1]-a[1])[0];
+
+  document.getElementById('statTotal').textContent = visible.length;
+  document.getElementById('statRegions').textContent = regions;
+  document.getElementById('statTop').textContent = top ? top[0] : '—';
+  document.getElementById('statsRow').style.display = 'grid';
+
+  renderList(visible);
+  renderMap(visible);
+}
+
+function renderList(visible) {
+  const list = document.getElementById('eventList');
+  if (!visible.length) {
+    list.innerHTML = '<div class="empty-state"><p>No events match the current filters.</p></div>';
+    return;
+  }
+
+  list.innerHTML = visible.map((ev, i) => `
+    <div class="ev-card" id="ev-${i}" onclick="toggleEvent(${i})">
+      <div class="ev-head">
+        <span class="cat-badge" style="color:${catColors[ev.cat]};background:${catBg[ev.cat]}">${ev.cat}</span>
+        <span class="ev-title">${ev.title}</span>
+      </div>
+      <div class="ev-meta">📍 ${ev.region}${ev.entities && ev.entities.length ? ' · ' + ev.entities[0] : ''}</div>
+      <div class="ev-desc" id="desc-${i}">${ev.desc}</div>
+      <div class="ev-tags" id="tags-${i}">${(ev.entities||[]).map(t=>`<span class="ev-tag">${t}</span>`).join('')}</div>
+      <div class="ev-actions" id="acts-${i}">
+        ${ev.wikiUrl ? `<a class="ev-link" href="${ev.wikiUrl}" target="_blank">Wikipedia ↗</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleEvent(i) {
+  const desc = document.getElementById(`desc-${i}`);
+  const tags = document.getElementById(`tags-${i}`);
+  const acts = document.getElementById(`acts-${i}`);
+  const card = document.getElementById(`ev-${i}`);
+  const open = desc.classList.toggle('open');
+  tags.classList.toggle('open', open);
+  acts.classList.toggle('open', open);
+  card.classList.toggle('highlighted', open);
+}
+
+function highlightEvent(i) {
+  const card = document.getElementById(`ev-${i}`);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.querySelectorAll('.ev-card').forEach(c => c.classList.remove('highlighted'));
+  card.classList.add('highlighted');
+
+  const desc = document.getElementById(`desc-${i}`);
+  const tags = document.getElementById(`tags-${i}`);
+  const acts = document.getElementById(`acts-${i}`);
+  desc.classList.add('open');
+  tags.classList.add('open');
+  acts.classList.add('open');
+}
+
+async function renderMap(visible) {
+  const container = document.getElementById('mapContainer');
+  const svg = d3.select('#mapSvg');
+  svg.selectAll('*').remove();
+
+  const W = container.clientWidth || 800;
+  const H = container.clientHeight || 500;
+  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H);
+
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (!worldData) {
+    try { worldData = await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'); }
+    catch(e) { return; }
+  }
+
+  const proj = d3.geoNaturalEarth1().fitSize([W, H], { type: 'Sphere' });
+  const path = d3.geoPath(proj);
+
+  svg.append('path')
+    .datum({ type: 'Sphere' })
+    .attr('d', path)
+    .attr('fill', isDark ? '#1a2540' : '#c8dff0')
+    .attr('stroke', 'none');
+
+  svg.selectAll('.land')
+    .data(topojson.feature(worldData, worldData.objects.countries).features)
+    .join('path')
+    .attr('class', 'land')
+    .attr('d', path)
+    .attr('fill', isDark ? '#2a3050' : '#e8e2d4')
+    .attr('stroke', isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.5)')
+    .attr('stroke-width', 0.5);
+
+  const tooltip = document.getElementById('mapTooltip');
+
+  visible.forEach((ev, i) => {
+    if (ev.lat == null || ev.lng == null) return;
+    const pt = proj([ev.lng, ev.lat]);
+    if (!pt || pt[0] < 0 || pt[1] < 0 || pt[0] > W || pt[1] > H) return;
+
+    const col = catColors[ev.cat] || '#888';
+
+    const g = svg.append('g')
+      .attr('transform', `translate(${pt[0]},${pt[1]})`)
+      .style('cursor', 'pointer');
+
+    g.append('circle').attr('r', 10).attr('fill', col).attr('opacity', 0.18);
+    g.append('circle').attr('r', 5).attr('fill', col).attr('opacity', 0.85);
+    g.append('circle').attr('r', 5).attr('fill', 'none').attr('stroke', '#fff').attr('stroke-width', 1).attr('opacity', 0.6);
+
+    g.on('mouseenter', function() {
+      const cRect = container.getBoundingClientRect();
+      const gRect = this.getBoundingClientRect();
+      const left = gRect.left - cRect.left + 12;
+      const top = gRect.top - cRect.top - 10;
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(left, W - 260) + 'px';
+      tooltip.style.top = Math.max(0, top) + 'px';
+      tooltip.innerHTML = `
+        <div class="tt-title">${ev.title}</div>
+        <div class="tt-region">${ev.region} · <span style="color:${col}">${ev.cat}</span></div>
+        <div class="tt-desc">${ev.desc.substring(0, 120)}…</div>
+      `;
+      d3.select(this).select('circle:nth-child(2)').attr('r', 7);
+    })
+    .on('mouseleave', function() {
+      tooltip.style.display = 'none';
+      d3.select(this).select('circle:nth-child(2)').attr('r', 5);
+    })
+    .on('click', () => highlightEvent(i));
+  });
+}
+
+document.getElementById('yearInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadYear();
+});
+
+document.getElementById('yearInput').addEventListener('input', e => {
+  updateEraBadge(parseInt(e.target.value) || 0);
+});
+
+window.addEventListener('resize', () => {
+  if (allEvents.length) renderMap(allEvents.filter(e => activeFilters.has(e.cat)));
+});
+
+loadYear();
+</script>
+</body>
+</html>

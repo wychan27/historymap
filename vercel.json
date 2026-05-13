@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/events/:year", "destination": "/api/events?year=:year" }
+  ]
+}
