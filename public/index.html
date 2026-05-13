@@ -390,9 +390,82 @@
       .layout { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
       .presets { display: none; }
     }
+  
+    #pw-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #f5f0e8;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pw-box {
+      background: #faf7f2;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .pw-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #8b3a2a;
+      margin-bottom: 8px;
+    }
+    .pw-sub {
+      font-size: 13px;
+      color: #8a7d68;
+      margin-bottom: 1.5rem;
+    }
+    .pw-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      padding: 10px 14px;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 8px;
+      background: #fff;
+      color: #1a1208;
+      margin-bottom: 10px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+    .pw-input:focus { border-color: #8b3a2a; }
+    .pw-btn {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #8b3a2a;
+      color: #fff;
+      cursor: pointer;
+    }
+    .pw-btn:hover { opacity: 0.85; }
+    .pw-error {
+      font-size: 12px;
+      color: #a02020;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
   </style>
 </head>
 <body>
+
+
+<div id="pw-overlay">
+  <div class="pw-box">
+    <div class="pw-logo">⧖ History Map</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input class="pw-input" type="password" id="pwInput" placeholder="Password" autofocus>
+    <button class="pw-btn" onclick="checkPassword()">Enter</button>
+    <div class="pw-error" id="pwError"></div>
+  </div>
+</div>
 
 <header>
   <div class="logo">⧖ History Map</div>
@@ -685,5 +758,31 @@ window.addEventListener('resize', () => {
 
 loadYear();
 </script>
+
+<script>
+  const SITE_PASSWORD = 'bumblebee99';
+
+  function checkPassword() {
+    const val = document.getElementById('pwInput').value;
+    if (val === SITE_PASSWORD) {
+      document.getElementById('pw-overlay').style.display = 'none';
+      sessionStorage.setItem('pw_ok', '1');
+    } else {
+      document.getElementById('pwError').textContent = 'Incorrect password. Try again.';
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  }
+
+  document.getElementById('pwInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  // Stay unlocked for the session
+  if (sessionStorage.getItem('pw_ok') === '1') {
+    document.getElementById('pw-overlay').style.display = 'none';
+  }
+</script>
+
 </body>
 </html>
