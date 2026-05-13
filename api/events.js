@@ -1,11 +1,18 @@
 const Anthropic = require('@anthropic-ai/sdk');
+const { Redis } = require('@upstash/redis');
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Simple in-memory rate limiter: max 20 requests per hour per IP
+// Upstash Redis client - uses env vars automatically set by Vercel integration
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+// Rate limiter: max 20 requests per hour per IP
 const rateLimit = new Map();
 const MAX_REQUESTS = 20;
-const WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const WINDOW_MS = 60 * 60 * 1000;
 
 function isRateLimited(ip) {
   const now = Date.now();
@@ -28,11 +35,8 @@ module.exports = async (req, res) => {
 
   // Check secret token
   const secret = process.env.API_SECRET;
-  if (secret) {
-    const provided = req.headers['x-api-secret'];
-    if (provided !== secret) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+  if (secret && req.headers['x-api-secret'] !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   // Rate limiting
@@ -47,7 +51,21 @@ module.exports = async (req, res) => {
   }
 
   const era = year < 0 ? `${Math.abs(year)} BCE` : `${year} CE`;
+  const cacheKey = `events:${year}`;
 
+  // Check cache first
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      console.log(`Cache hit for ${era}`);
+      return res.json({ year, era, events: cached, cached: true });
+    }
+  } catch (err) {
+    console.log('Cache read error, continuing:', err.message);
+  }
+
+  // Cache miss — call Anthropic
+  console.log(`Cache miss for ${era}, calling Anthropic...`);
   try {
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -75,7 +93,16 @@ Start your response with [ and end with ]`
     const jsonEnd = raw.lastIndexOf(']') + 1;
     if (jsonStart === -1) throw new Error('No JSON array found');
     const events = JSON.parse(raw.slice(jsonStart, jsonEnd));
-    res.json({ year, era, events });
+
+    // Save to cache forever — history does not change!
+    try {
+      await redis.set(cacheKey, events);
+      console.log(`Cached ${era}`);
+    } catch (err) {
+      console.log('Cache write error:', err.message);
+    }
+
+    res.json({ year, era, events, cached: false });
   } catch (err) {
     console.error('Error:', err.message);
     res.status(500).json({ error: err.message });
