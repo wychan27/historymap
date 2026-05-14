@@ -143,7 +143,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 380px;
+      grid-template-columns: 1fr 1fr;
       height: calc(100vh - 60px);
     }
 
@@ -232,7 +232,7 @@
 
     .side-title {
       font-family: 'Playfair Display', serif;
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 600;
       color: var(--text);
       margin-bottom: 8px;
@@ -251,8 +251,8 @@
       text-align: center;
     }
 
-    .stat-n { font-size: 18px; font-weight: 500; color: var(--text); font-family: 'Playfair Display', serif; }
-    .stat-l { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+    .stat-n { font-size: 22px; font-weight: 500; color: var(--text); font-family: 'Playfair Display', serif; }
+    .stat-l { font-size: 13px; color: var(--text-3); margin-top: 2px; }
 
     .event-list {
       flex: 1;
@@ -280,9 +280,9 @@
     .ev-head { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 6px; }
 
     .cat-badge {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 500;
-      padding: 2px 7px;
+      padding: 3px 9px;
       border-radius: 10px;
       white-space: nowrap;
       flex-shrink: 0;
@@ -290,17 +290,17 @@
     }
 
     .ev-title {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 500;
       color: var(--text);
       line-height: 1.4;
       font-family: 'Playfair Display', serif;
     }
 
-    .ev-meta { font-size: 11px; color: var(--text-3); margin-bottom: 6px; }
+    .ev-meta { font-size: 13px; color: var(--text-3); margin-bottom: 6px; }
 
     .ev-desc {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--text-2);
       line-height: 1.6;
       display: none;
@@ -319,8 +319,8 @@
     .ev-tags.open { display: flex; }
 
     .ev-tag {
-      font-size: 11px;
-      padding: 2px 7px;
+      font-size: 12px;
+      padding: 3px 8px;
       border-radius: 5px;
       background: var(--surface2);
       color: var(--text-2);
@@ -331,8 +331,8 @@
     .ev-actions.open { display: flex; }
 
     .ev-link {
-      font-size: 11px;
-      padding: 4px 10px;
+      font-size: 13px;
+      padding: 5px 12px;
       border-radius: 5px;
       border: 1px solid var(--border-strong);
       background: transparent;
@@ -350,7 +350,7 @@
       color: var(--text-3);
     }
 
-    .empty-state p { font-size: 14px; line-height: 1.7; }
+    .empty-state p { font-size: 15px; line-height: 1.7; }
 
     .loading-state {
       padding: 3rem 1rem;
@@ -380,7 +380,7 @@
     .side-footer {
       padding: 10px 16px;
       border-top: 1px solid var(--border);
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-3);
     }
 
@@ -389,190 +389,6 @@
     @media (max-width: 900px) {
       .layout { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
       .presets { display: none; }
-    }
-
-    /* ── Tag Timeline Panel ── */
-    .ev-tag {
-      cursor: pointer;
-      transition: background 0.12s, color 0.12s;
-    }
-    .ev-tag:hover {
-      background: var(--accent-light);
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .side-panel {
-      position: relative;
-    }
-
-    .tag-panel {
-      position: absolute;
-      inset: 0;
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      transform: translateX(100%);
-      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10;
-    }
-
-    .tag-panel.open {
-      transform: translateX(0);
-    }
-
-    .tag-panel-header {
-      padding: 14px 16px 12px;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .tag-back-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: var(--text-3);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      margin-bottom: 10px;
-      font-family: 'Inter', sans-serif;
-      transition: color 0.12s;
-    }
-    .tag-back-btn:hover { color: var(--accent); }
-
-    .tag-panel-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tag-name-chip {
-      font-size: 13px;
-      font-weight: 500;
-      padding: 3px 10px;
-      border-radius: 12px;
-      background: var(--accent-light);
-      color: var(--accent);
-      font-family: 'Inter', sans-serif;
-    }
-
-    .tag-range-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .tag-range-row label {
-      font-size: 12px;
-      color: var(--text-3);
-      white-space: nowrap;
-    }
-
-    .tag-year-input {
-      font-family: 'Playfair Display', serif;
-      font-size: 15px;
-      font-weight: 500;
-      width: 80px;
-      border: none;
-      border-bottom: 2px solid var(--border-strong);
-      background: transparent;
-      color: var(--text);
-      padding: 2px 4px;
-      text-align: center;
-      outline: none;
-    }
-    .tag-year-input:focus { border-bottom-color: var(--accent); }
-
-    .tag-search-btn {
-      font-family: 'Inter', sans-serif;
-      font-size: 12px;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--accent);
-      background: var(--accent);
-      color: #fff;
-      cursor: pointer;
-      transition: opacity 0.15s;
-      white-space: nowrap;
-    }
-    .tag-search-btn:hover { opacity: 0.85; }
-    .tag-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .tag-progress {
-      margin-top: 10px;
-      display: none;
-    }
-    .tag-progress.visible { display: block; }
-    .tag-progress-bar-wrap {
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 5px;
-    }
-    .tag-progress-bar {
-      height: 100%;
-      background: var(--accent);
-      border-radius: 2px;
-      transition: width 0.3s ease;
-      width: 0%;
-    }
-    .tag-progress-label {
-      font-size: 11px;
-      color: var(--text-3);
-    }
-
-    .tag-event-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-    }
-    .tag-event-list::-webkit-scrollbar { width: 4px; }
-    .tag-event-list::-webkit-scrollbar-track { background: transparent; }
-    .tag-event-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
-
-    .tag-year-group {
-      margin-bottom: 16px;
-    }
-
-    .tag-year-label {
-      font-family: 'Playfair Display', serif;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent);
-      padding: 4px 0 6px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .tag-year-label::before {
-      content: '';
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .tag-panel-footer {
-      padding: 10px 16px;
-      border-top: 1px solid var(--border);
-      font-size: 11px;
-      color: var(--text-3);
     }
   
     #pw-overlay {
@@ -711,43 +527,12 @@
     <div class="side-footer">
       Events synthesized via Claude AI from historical sources &amp; <a href="https://www.wikidata.org" target="_blank">Wikidata</a>.
     </div>
-
-    <!-- Tag Timeline Panel (slides in over side panel) -->
-    <div class="tag-panel" id="tagPanel">
-      <div class="tag-panel-header">
-        <button class="tag-back-btn" onclick="closeTagPanel()">← Back to events</button>
-        <div class="tag-panel-title">
-          Timeline: <span class="tag-name-chip" id="tagNameChip">—</span>
-        </div>
-        <div class="tag-range-row">
-          <label>From</label>
-          <input class="tag-year-input" type="number" id="tagFromYear" placeholder="-500">
-          <label>to</label>
-          <input class="tag-year-input" type="number" id="tagToYear" placeholder="500">
-          <button class="tag-search-btn" id="tagSearchBtn" onclick="runTagSearch()">Search</button>
-        </div>
-        <div class="tag-progress" id="tagProgress">
-          <div class="tag-progress-bar-wrap">
-            <div class="tag-progress-bar" id="tagProgressBar"></div>
-          </div>
-          <div class="tag-progress-label" id="tagProgressLabel">Fetching years…</div>
-        </div>
-      </div>
-      <div class="tag-event-list" id="tagEventList">
-        <div class="empty-state">
-          <p>Set a year range and click <strong>Search</strong> to see how this topic evolved over time.</p>
-        </div>
-      </div>
-      <div class="tag-panel-footer">
-        ~10 sampled years fetched per search · cached after first load
-      </div>
-    </div>
   </div>
 </div>
 
 <script>
 const API_BASE = '';
-const API_SECRET = '';
+const API_SECRET = '__REPLACE_WITH_YOUR_SECRET__';
 
 const catColors = {
   political:'#1a5fa0', religion:'#6b3fa0', military:'#a02020',
@@ -851,7 +636,7 @@ function renderList(visible) {
       </div>
       <div class="ev-meta">📍 ${ev.region}${ev.entities && ev.entities.length ? ' · ' + ev.entities[0] : ''}</div>
       <div class="ev-desc" id="desc-${i}">${ev.desc}</div>
-      <div class="ev-tags" id="tags-${i}">${(ev.entities||[]).map(t=>`<span class="ev-tag" onclick="event.stopPropagation();openTagPanel('${t.replace(/'/g,"\\'")}',${JSON.stringify(currentYear)})">${t}</span>`).join('')}</div>
+      <div class="ev-tags" id="tags-${i}">${(ev.entities||[]).map(t=>`<span class="ev-tag">${t}</span>`).join('')}</div>
       <div class="ev-actions" id="acts-${i}">
         ${ev.wikiUrl ? `<a class="ev-link" href="${ev.wikiUrl}" target="_blank">Wikipedia ↗</a>` : ''}
       </div>
@@ -971,164 +756,11 @@ window.addEventListener('resize', () => {
   if (allEvents.length) renderMap(allEvents.filter(e => activeFilters.has(e.cat)));
 });
 
-// ── Tag Timeline ──────────────────────────────────────────────
-
-let currentTag = '';
-
-function openTagPanel(tag, year) {
-  currentTag = tag;
-  document.getElementById('tagNameChip').textContent = tag;
-  document.getElementById('tagPanel').classList.add('open');
-
-  // Smart defaults: ±300 years from current, clamped to app range
-  const from = Math.max(-3000, year - 300);
-  const to   = Math.min(2000,  year + 300);
-  document.getElementById('tagFromYear').value = from;
-  document.getElementById('tagToYear').value   = to;
-
-  document.getElementById('tagEventList').innerHTML = `
-    <div class="empty-state">
-      <p>Set a year range and click <strong>Search</strong> to see how <em>${tag}</em> evolved over time.</p>
-    </div>`;
-  document.getElementById('tagProgress').classList.remove('visible');
-}
-
-function closeTagPanel() {
-  document.getElementById('tagPanel').classList.remove('open');
-}
-
-function sampleYears(from, to, n = 10) {
-  from = parseInt(from); to = parseInt(to);
-  if (from > to) [from, to] = [to, from];
-  if (from === to) return [from];
-  const span = to - from;
-  if (span <= n) {
-    // fewer years than samples — just use every year
-    const years = [];
-    for (let y = from; y <= to; y++) years.push(y);
-    return years;
-  }
-  // evenly spaced, always include endpoints
-  const years = new Set([from, to]);
-  const step = span / (n - 1);
-  for (let i = 1; i < n - 1; i++) {
-    years.add(Math.round(from + i * step));
-  }
-  return Array.from(years).sort((a, b) => a - b);
-}
-
-async function fetchYearCached(year) {
-  const resp = await fetch(`${API_BASE}/api/events/${year}`, {
-    headers: { 'x-api-secret': API_SECRET }
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const data = await resp.json();
-  return { year, events: data.events };
-}
-
-async function runTagSearch() {
-  const tag  = currentTag;
-  const from = parseInt(document.getElementById('tagFromYear').value);
-  const to   = parseInt(document.getElementById('tagToYear').value);
-
-  if (isNaN(from) || isNaN(to)) return;
-
-  const years = sampleYears(from, to, 10);
-  const btn   = document.getElementById('tagSearchBtn');
-  const prog  = document.getElementById('tagProgress');
-  const bar   = document.getElementById('tagProgressBar');
-  const label = document.getElementById('tagProgressLabel');
-  const list  = document.getElementById('tagEventList');
-
-  btn.disabled = true;
-  prog.classList.add('visible');
-  list.innerHTML = '';
-  bar.style.width = '0%';
-
-  const results = []; // { year, events[] }
-  const tagLower = tag.toLowerCase();
-
-  for (let i = 0; i < years.length; i++) {
-    const y = years[i];
-    label.textContent = `Fetching ${y < 0 ? Math.abs(y) + ' BCE' : y + ' CE'} (${i + 1}/${years.length})…`;
-    bar.style.width = ((i / years.length) * 100) + '%';
-
-    try {
-      const { year: yr, events } = await fetchYearCached(y);
-      const matches = (events || []).filter(ev =>
-        (ev.entities || []).some(e => e.toLowerCase().includes(tagLower)) ||
-        ev.title.toLowerCase().includes(tagLower) ||
-        ev.desc.toLowerCase().includes(tagLower)
-      );
-      if (matches.length) results.push({ year: yr, events: matches });
-    } catch (err) {
-      console.warn(`Failed to fetch ${y}:`, err.message);
-    }
-  }
-
-  bar.style.width = '100%';
-  label.textContent = `Done — ${results.reduce((s, r) => s + r.events.length, 0)} events found across ${results.length} years`;
-
-  if (!results.length) {
-    list.innerHTML = `<div class="empty-state"><p>No events mentioning <strong>${tag}</strong> found in this range.<br><br>Try a wider year range.</p></div>`;
-  } else {
-    renderTagResults(results, tag);
-  }
-
-  btn.disabled = false;
-}
-
-function renderTagResults(results, tag) {
-  const list = document.getElementById('tagEventList');
-  const tagLower = tag.toLowerCase();
-
-  list.innerHTML = results.map(({ year, events }) => {
-    const era = year < 0 ? `${Math.abs(year)} BCE` : `${year} CE`;
-    const cards = events.map((ev, i) => {
-      const uid = `tev-${year}-${i}`;
-      return `
-        <div class="ev-card" id="${uid}" onclick="toggleTagEvent('${uid}')">
-          <div class="ev-head">
-            <span class="cat-badge" style="color:${catColors[ev.cat]};background:${catBg[ev.cat]}">${ev.cat}</span>
-            <span class="ev-title">${ev.title}</span>
-          </div>
-          <div class="ev-meta">📍 ${ev.region}${ev.entities && ev.entities.length ? ' · ' + ev.entities[0] : ''}</div>
-          <div class="ev-desc" id="${uid}-desc">${ev.desc}</div>
-          <div class="ev-tags" id="${uid}-tags">${(ev.entities||[]).map(t => {
-            const isMatch = t.toLowerCase().includes(tagLower);
-            return `<span class="ev-tag" style="${isMatch ? 'background:var(--accent-light);color:var(--accent);border-color:var(--accent);' : ''}"
-              onclick="event.stopPropagation();openTagPanel('${t.replace(/'/g,"\\'")}',${year})">${t}</span>`;
-          }).join('')}</div>
-          <div class="ev-actions" id="${uid}-acts">
-            ${ev.wikiUrl ? `<a class="ev-link" href="${ev.wikiUrl}" target="_blank">Wikipedia ↗</a>` : ''}
-          </div>
-        </div>`;
-    }).join('');
-
-    return `
-      <div class="tag-year-group">
-        <div class="tag-year-label">${era}</div>
-        ${cards}
-      </div>`;
-  }).join('');
-}
-
-function toggleTagEvent(uid) {
-  const desc = document.getElementById(`${uid}-desc`);
-  const tags = document.getElementById(`${uid}-tags`);
-  const acts = document.getElementById(`${uid}-acts`);
-  const card = document.getElementById(uid);
-  const open = desc.classList.toggle('open');
-  tags.classList.toggle('open', open);
-  acts.classList.toggle('open', open);
-  card.classList.toggle('highlighted', open);
-}
-
 loadYear();
 </script>
 
 <script>
-  const SITE_PASSWORD = 'bumblebee99';
+  const SITE_PASSWORD = '__REPLACE_WITH_SITE_PASSWORD__';
 
   function checkPassword() {
     const val = document.getElementById('pwInput').value;
