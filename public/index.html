@@ -1106,11 +1106,11 @@ function renderTagResults(groups, tag) {
 
   list.innerHTML = groups.map(g => `
     <div class="tag-year-group">
-      <div class="tag-year-label">${g.era}</div>
+      <div class="tag-year-label">📅 ${g.era}</div>
       ${g.events.map(ev => `
         <div class="tag-ev-card">
           <div class="tag-ev-title">${ev.title}</div>
-          <div class="tag-ev-meta">📍 ${ev.region} · <span style="color:${catColors[ev.cat]||'#888'}">${ev.cat}</span></div>
+          <div class="tag-ev-meta">📍 ${ev.region} · <span style="color:${catColors[ev.cat]||'#888'}">${ev.cat}</span> · <span style="color:var(--accent);font-weight:500">${g.era}</span></div>
           <div class="tag-ev-desc">${ev.desc}</div>
           <div class="tag-ev-tags">
             ${(ev.entities||[]).map(t => `<span class="tag-ev-tag${t.toLowerCase()===tag.toLowerCase()?' active':''}" onclick="openTagPanel('${t.replace(/'/g,"\\'")}',${g.year})">${t}</span>`).join('')}
@@ -1126,7 +1126,7 @@ loadYear();
 </script>
 
 <script>
-  const SITE_PASSWORD = 'bumblebee99';
+  const SITE_PASSWORD = 'bumblebee99_';
 
   function checkPassword() {
     const val = document.getElementById('pwInput').value;
