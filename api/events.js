@@ -11,7 +11,7 @@ const redis = new Redis({
 
 // Rate limiter: max 20 requests per hour per IP
 const rateLimit = new Map();
-const MAX_REQUESTS = 100;
+const MAX_REQUESTS = 20;
 const WINDOW_MS = 60 * 60 * 1000;
 
 function isRateLimited(ip) {
@@ -73,10 +73,11 @@ module.exports = async (req, res) => {
       messages: [{
         role: 'user',
         content: `Return ONLY a valid JSON array, no markdown, no backticks, no explanation.
-Generate 8 historical events from ${era}.
+Generate 8 historical events that occurred specifically around the year ${era}.
+CRITICAL: Every event MUST be historically accurate to within ~20 years of ${era}. Do NOT include events from other centuries even if they share the same entities or themes. For example, if the year is 270 BCE, do not include events from 370 CE just because they involve the same empire.
 Each object must have these exact fields:
 "title" (max 8 words, no apostrophes),
-"desc" (2 sentences, no apostrophes or special characters),
+"desc" (2 sentences, no apostrophes or special characters — must describe what specifically happened around ${era}),
 "cat" (one of: political religion military culture science exploration other),
 "region" (one of: Europe Middle-East East-Asia South-Asia Southeast-Asia Central-Asia Africa Americas Scandinavia Oceania),
 "lat" (number),
