@@ -11,7 +11,7 @@ const redis = new Redis({
 
 // Rate limiter: max 20 requests per hour per IP
 const rateLimit = new Map();
-const MAX_REQUESTS = 20;
+const MAX_REQUESTS = 100;
 const WINDOW_MS = 60 * 60 * 1000;
 
 function isRateLimited(ip) {
